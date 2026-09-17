@@ -41,6 +41,39 @@ if (names.length === 0) {
 
 // TODO:
 //   1. names.map(async (name) => { ... })  — 이름마다 geocode → forecast, { city, max } 를 돌려주는 Promise
+const data = names.map(async (name) => {
+  const place = await geocode(name);
+  const fc = await forecast(place);
+
+  return {
+    city: name,
+    max: fc.days[0].max
+  };
+});
+
 //   2. const results = await Promise.allSettled(...)
+const results = await Promise.allSettled(data);
+
 //   3. fulfilled / rejected 로 나눔
+const fulfilled = results.filter((s) => s.status === "fulfilled");
+
+//rejected는 이름을 따로 기억하기 위하여 map을 활용하였음
+const rejected = results
+.map((result, i) => ({result, name: names[i]}))
+.filter(({result}) => result.status === "rejected")
+
 //   4. max 내림차순 정렬 → `${i + 1}. ${city.padEnd(8)} ${max.toFixed(1)}` → 실패는 `✗ ${name}: ${message}`
+const sorted = fulfilled
+  .map((s) => s.value)
+  .sort((a, b) => b.max - a.max);
+
+
+//Fulfilled된 값들 내림차순 정렬
+for(let i=0;i<sorted.length;i++){
+  console.log(`${i + 1}. ${sorted[i].city.padEnd(8)} ${sorted[i].max.toFixed(1)}`);
+}
+
+//Rejected 된 값들 오류 출력
+for(const item of rejected){
+  console.log(`✗ ${item.name}: ${item.result.reason.message}`);
+}
