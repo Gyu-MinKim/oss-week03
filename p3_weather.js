@@ -46,8 +46,28 @@ export async function geocode(name) {
 // 문서: https://open-meteo.com/en/docs
 export async function fetchForecastRaw({ latitude, longitude }, days = 3) {
   const url = new URL("https://api.open-meteo.com/v1/forecast");
+
   // TODO: 위 파라미터를 url.searchParams.set 으로 하나씩 넣는다
+  url.searchParams.set("latitude", latitude);
+  url.searchParams.set("longitude", longitude);
+
+  //현재 날씨
+  url.searchParams.set(
+    "current",
+    "temperature_2m,weather_code"
+  );
+
+  //일별 예보
+  url.searchParams.set(
+    "daily",
+    "temperature_2m_max,temperature_2m_min,weather_code"
+  );
+
+  url.searchParams.set("timezone", "auto");
+  url.searchParams.set("forecast_days", days);
+
   // TODO: return await getJSON(url)
+  return await getJSON(url);
 }
 
 // P3 (2/2). 원본 응답에서 main.js 가 찍을 것만 추려 작은 객체로 만든다.
@@ -64,6 +84,29 @@ export async function fetchForecastRaw({ latitude, longitude }, days = 3) {
 //   }
 export function parseForecast(raw) {
   // TODO
+
+  const days = []; //배열 초기화(추후에 push할 예정)
+
+  //raw.daily의 인덱스 길이만큼 반복
+  for(let i = 0; i < raw.daily.time.length ; i++){
+    //반환에 필요한 정보들을 일별로 배열에 저장
+    days.push({
+      date: raw.daily.time[i],
+      min: raw.daily.temperature_2m_min[i],
+      max: raw.daily.temperature_2m_max[i],
+      code: raw.daily.weather_code[i]
+    });
+  }
+
+  return {
+    now: {
+      temp: raw.current.temperature_2m,
+      unit: raw.current_units.temperature_2m,
+      code: raw.current.weather_code
+    },
+    days
+  };
+
 }
 
 // 두 단계를 묶은 것. P4, P5, P6 가 이 함수를 그대로 가져다 쓴다. 건드릴 필요 없음.
