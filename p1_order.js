@@ -41,7 +41,9 @@ sleep(10).then(() => console.log("F"));
 
 console.log("G");
 
-// prediction:
-// actual:
+// prediction: A D E G C F B
+// actual: A D G C F E B
 // why I was wrong (one line per miss):
-//
+// async 내부의 await은 함수 내부에서만 기다리게 하고, 함수 외부는 그대로 동작하기 때문에, 별도의 Callback을 하지 않는 G를 최우선적으로 처리한다.
+// 또한, E가 30ms동안 sleep하는 동안 setTimeout()이 0인 C가 먼저 출력된다.
+// 같은 원리로 10ms동안 sleep하는 F가 E보다 먼저 실행된다.
