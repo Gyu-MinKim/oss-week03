@@ -31,7 +31,19 @@
 //
 // 커밋 메시지: p4: compare cities
 
+import chalk from "chalk"; // for p7
 import { geocode, forecast } from "./p3_weather.js";
+
+function paint(max)
+{
+  const s = max.toFixed(1); //직접 출력하는 부분에서 toFixed 처리 X
+  if(max >= 30)
+    return chalk.red(s);
+  else if(max < 10)
+    return chalk.blue(s);
+  else
+    return s;
+}
 
 const names = process.argv.slice(2);
 if (names.length === 0) {
@@ -70,10 +82,10 @@ const sorted = fulfilled
 
 //Fulfilled된 값들 내림차순 정렬
 for(let i=0;i<sorted.length;i++){
-  console.log(`${i + 1}. ${sorted[i].city.padEnd(8)} ${sorted[i].max.toFixed(1)}`);
+  console.log(`${i + 1}. ${chalk.bold(sorted[i].city.padEnd(8))} ${paint(sorted[i].max)}`);
 }
 
 //Rejected 된 값들 오류 출력
 for(const item of rejected){
-  console.log(`✗ ${item.name}: ${item.result.reason.message}`);
+  console.log(`✗ ${chalk.bold(item.name)}: ${item.result.reason.message}`);
 }
